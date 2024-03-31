@@ -1,6 +1,6 @@
 # # this general sort complains bout the compare function having wrong type when bound
 
-# fn sort[T: CollectionElement, compare: fn(T,T)->Bool](inout vector: DynamicVector[T]):
+# fn sort[T: CollectionElement, compare: fn(T,T)->Bool](inout vector: List[T]):
 #     for i in range(1,len(vector)):
 #         var j = i
 #         var trans = vector[j]

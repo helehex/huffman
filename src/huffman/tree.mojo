@@ -29,7 +29,7 @@ struct Tree(Stringable, CollectionElement):
     fn build(owned frequencies: FrequencyTable) raises -> Self:
         if len(frequencies) < 2: raise Error("Not enough symbols")
         var leafs = frequencies.to_leafs()
-        var trees = DynamicVector[Tree](capacity = len(leafs))
+        var trees = List[Tree](capacity = len(leafs))
         var next_tree = 0
 
         @parameter

@@ -39,7 +39,7 @@ struct FrequencyTable(Stringable, Sized):
     fn account(inout self, string: String):
         for i in range(len(string)):
             var char = string[i]
-            self._data[char] = self._data.find(char).or_else(0).take() + 1
+            self._data[char] = self._data.find(char).or_else(0) + 1
         self._data[None] = 1
 
 
@@ -57,9 +57,9 @@ struct FrequencyTable(Stringable, Sized):
 
     #------( Convert )------#
     #
-    fn to_leafs(self) -> DynamicVector[Leaf]:
+    fn to_leafs(self) -> List[Leaf]:
         """Return a list of leafs sorted by frequency."""
-        var result = DynamicVector[Leaf](capacity = len(self))
+        var result = List[Leaf](capacity = len(self))
         for item in self._data.items(): result.append(item[])
         sort(result)
         return result
@@ -68,7 +68,7 @@ struct FrequencyTable(Stringable, Sized):
 
 
 # used to sort leafs, see utils.sort
-fn sort(inout vector: DynamicVector[Leaf]):
+fn sort(inout vector: List[Leaf]):
     for i in range(1,len(vector)):
         var j = i
         var trans = vector[j]

@@ -79,5 +79,5 @@ fn _str[separator: StringLiteral = ""](ptr: DTypePointer[DType.int8], len: Int) 
     for i in range(len - 1): result += Char(ptr.load(i)) + separator
     return result + Char(ptr.load(len - 1))
 
-fn _print(value: DynamicVector[Leaf]):
+fn _print(value: List[Leaf]):
     for i in range(len(value)): print(value[i])
