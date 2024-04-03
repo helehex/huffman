@@ -3,7 +3,7 @@ Implements a character frequency table for huffman coding.
 """
 from pathlib import Path
 from collections import Dict
-from huffman.utils import *
+from .utils import *
 
 
 struct FrequencyTable(Stringable, Sized):
@@ -61,18 +61,5 @@ struct FrequencyTable(Stringable, Sized):
         """Return a list of leafs sorted by frequency."""
         var result = List[Leaf](capacity = len(self))
         for item in self._data.items(): result.append(item[])
-        sort(result)
+        sort[descending = True](result)
         return result
-
-
-
-
-# used to sort leafs, see utils.sort
-fn sort(inout vector: List[Leaf]):
-    for i in range(1,len(vector)):
-        var j = i
-        var trans = vector[j]
-        while j > 0 and trans > vector[j - 1]:
-            vector[j] = vector[j - 1]
-            j -= 1
-        vector[j] = trans

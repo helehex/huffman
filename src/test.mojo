@@ -14,10 +14,10 @@ fn test_huffman() raises:
     #
     var path = Path("res/important.txt")
     var tbl = FrequencyTable(path)
-    # var vec = tbl.to_vector()
-    # sort(vec)
+    # var vec = tbl.to_leafs()
+    # sort[descending = True](vec)
     # print(tbl)
-    # _print(vec)
+    # print_(vec)
     var tree = Tree(tbl)
     var book = Book(tree)
     print(tree)
