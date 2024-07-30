@@ -1,0 +1,4 @@
+- canonical encoding
+- bit
+    - improve bit repr and eval
+    - bit array

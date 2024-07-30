@@ -1,29 +1,35 @@
-"""
-Implements a character frequency table for huffman coding.
-"""
+# x----------------------------------------------------------------------------------------------x #
+# | Copyright (c) 2024 Helehex
+# x----------------------------------------------------------------------------------------------x #
+"""Implements a character frequency table for huffman coding."""
+
 from pathlib import Path
 from collections import Dict
 from .utils import *
 
 
-struct FrequencyTable(Stringable, Sized):
+# +----------------------------------------------------------------------------------------------+ #
+# | Huffman Frequency Table
+# +----------------------------------------------------------------------------------------------+ #
+#
+struct FrequencyTable(Sized, Formattable, StringableCollectionElement):
     """
     A table containing the frequency of characters in a `String` or `Path`.
 
     Automatically includes the null character with a frequency of 1. (used to mark the end of a string)
     """
-    #------< Data >------#
+
+    # +------< Data >------+ #
     #
     var _data: Dict[Char, Int]
 
-
-    #------( Lifetime )------#
+    # +------( Lifecycle )------+ #
     #
     fn __init__(inout self, string: String):
         self._data = Dict[Char, Int]()
         self.account(string)
 
-    fn __init__[__:None=None](inout self, path: Path) raises:
+    fn __init__[__: None = None](inout self, path: Path) raises:
         self._data = Dict[Char, Int]()
         self.account(path)
 
@@ -31,7 +37,7 @@ struct FrequencyTable(Stringable, Sized):
         self._data = other._data
 
     fn __moveinit__(inout self, owned other: Self):
-        self._data = other._data
+        self._data = other._data^
 
     fn account(inout self, path: Path) raises:
         self.account(path.read_text())
@@ -40,26 +46,30 @@ struct FrequencyTable(Stringable, Sized):
         for i in range(len(string)):
             var char = string[i]
             self._data[char] = self._data.find(char).or_else(0) + 1
-        self._data[None] = 1
+        self._data[Char()] = 1
 
-
-    #------( Formatting )------#
-    #
-    fn __str__(self) -> String:
-        var result: String = ""
-        for item in self._data.items():
-            result += str(Leaf(item[])) + "\n"
-        return result
-
-    fn __len__(self) -> Int:
-        return len(self._data)
-
-
-    #------( Convert )------#
+    # +------( Convert )------+ #
     #
     fn to_leafs(self) -> List[Leaf]:
         """Return a list of leafs sorted by frequency."""
-        var result = List[Leaf](capacity = len(self))
-        for item in self._data.items(): result.append(item[])
-        sort[descending = True](result)
+        var result = List[Leaf](capacity=len(self))
+        for item in self._data.items():
+            result.append(item[])
+        sort_[descending=True](result)
         return result
+
+    # +------( Format )------+ #
+    #
+    @no_inline
+    fn __str__(self) -> String:
+        return String.format_sequence(self)
+
+    @no_inline
+    fn format_to(self, inout writer: Formatter):
+        for item in self._data.items():
+            writer.write(Leaf(item[]), "\n")
+
+    # +------( Unary )------+ #
+    #
+    fn __len__(self) -> Int:
+        return len(self._data)

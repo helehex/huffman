@@ -1,66 +1,74 @@
-"""
-Implements tree structures for huffman coding.
+# x----------------------------------------------------------------------------------------------x #
+# | Copyright (c) 2024 Helehex
+# x----------------------------------------------------------------------------------------------x #
+"""Implements tree structures for huffman coding."""
 
-This could be done better with more language features.
-"""
 from collections.dict import Dict, DictEntry
 from collections.optional import Variant, Optional
 from huffman.utils import *
 
 
-struct Tree(Stringable, CollectionElement):
-    """
-    Huffman tree.
-    """
-    #------< Data >------#
+# +----------------------------------------------------------------------------------------------+ #
+# | Huffman Tree
+# +----------------------------------------------------------------------------------------------+ #
+#
+struct Tree(Formattable, StringableCollectionElement):
+    """Huffman tree."""
+
+    # +------< Data >------+ #
     #
     var chars: String
     var freqs: Int
-    var left: AnyPointer[Node]
-    var right: AnyPointer[Node]
-    var _rc: Pointer[Int]
+    var left: UnsafePointer[Self]
+    var right: UnsafePointer[Self]
+    var _rc: UnsafePointer[Int]
 
-
-    #------[ Builder ]------#
+    # +------( Lifecycle )------+ #
     #
-    # causes a segfault if you try to move this directly into `__init__()`
-    #
-    @staticmethod
-    fn build(owned frequencies: FrequencyTable) raises -> Self:
-        if len(frequencies) < 2: raise Error("Not enough symbols")
+    fn __init__(inout self, frequencies: FrequencyTable) raises:
+        if len(frequencies) < 2:
+            raise Error("Not enough symbols")
         var leafs = frequencies.to_leafs()
-        var trees = List[Tree](capacity = len(leafs))
+        var trees = List[Self](capacity=len(leafs))
         var next_tree = 0
 
         @parameter
-        fn pop_min() -> Node:
-            if next_tree < len(trees) and (len(leafs) == 0 or Node(trees[next_tree]) < Node(leafs[len(leafs) - 1])):
+        fn pop_min() -> Self:
+            if next_tree < len(trees) and (
+                len(leafs) == 0 or trees[next_tree] < leafs[-1]
+            ):
                 var result = trees[next_tree]
                 next_tree += 1
                 return result
             else:
-                return leafs.pop_back()
+                return leafs.pop()
 
         while len(leafs) + (len(trees) - next_tree) >= 2:
-            trees.append(Tree(right = pop_min(), left = pop_min())) # This puts smaller frequencies on the right. The other way just inverts the encoding.
+            # This puts smaller frequencies on the right. 
+            # The other way just inverts the encoding.
+            var t1 = pop_min()
+            var t2 = pop_min()
+            trees.append(Tree(t1, t2))
 
-        return trees[next_tree]
+        self = trees[next_tree]
 
+    fn __init__(inout self, left: Self, right: Self):
+        self.chars = left.chars + right.chars
+        self.freqs = left.freqs + right.freqs
+        self.left = UnsafePointer[Self].alloc(1)
+        self.left.init_pointee_copy(left)
+        self.right = UnsafePointer[Self].alloc(1)
+        self.right.init_pointee_copy(right)
+        self._rc = UnsafePointer[Int].alloc(1)
+        self._rc.init_pointee_copy(0)
 
-    #------( Lifetime )------#
-    #
-    fn __init__(inout self, owned frequencies: FrequencyTable) raises:
-        self = Self.build(frequencies)
-
-    fn __init__(inout self, left: Node, right: Node):
-        self.chars = left.get_chars() + right.get_chars()
-        self.freqs = left.get_freqs() + right.get_freqs()
-        self.left = AnyPointer[Node].alloc(1)
-        self.left.emplace_value(left)
-        self.right = AnyPointer[Node].alloc(1)
-        self.right.emplace_value(right)
-        self._rc = Pointer[Int].alloc(1)
-        self._rc.store(0)
+    fn __init__(inout self, leaf: Leaf):
+        self.chars = str(leaf.char)
+        self.freqs = leaf.freq
+        self.left = UnsafePointer[Self]()
+        self.right = UnsafePointer[Self]()
+        self._rc = UnsafePointer[Int].alloc(1)
+        self._rc.init_pointee_copy(0)
 
     fn __copyinit__(inout self, other: Self):
         self.chars = other.chars
@@ -68,7 +76,7 @@ struct Tree(Stringable, CollectionElement):
         self.left = other.left
         self.right = other.right
         self._rc = other._rc
-        self._rc.store(self._rc.load() + 1)
+        self._rc[] += 1
 
     fn __moveinit__(inout self, owned other: Self):
         self.chars = other.chars
@@ -77,92 +85,108 @@ struct Tree(Stringable, CollectionElement):
         self.right = other.right
         self._rc = other._rc
 
-    @always_inline
     fn __del__(owned self):
-        var rc = self._rc.load() - 1
-        if rc < 0:
+        var rc = self._rc[]
+        if rc == 0:
+            self._rc.destroy_pointee()
             self._rc.free()
-            self.left.free()
-            self.right.free()
-            return
-        self._rc.store(rc)
+            if self.left:
+                self.left.destroy_pointee()
+                self.left.free()
+            if self.right:
+                self.right.destroy_pointee()
+                self.right.free()
+        else:
+            self._rc[] = rc - 1
 
-
-    #------( Get )------#
+    # +------( Format )------+ #
     #
-    fn get_left(self) -> Node: return self.left[]
-
-    fn get_right(self) -> Node: return self.right[]
-
-
-    #------( Formatting )------#
-    #
+    @no_inline
     fn __str__(self) -> String:
-        return self.to_string()
+        return String.format_sequence(self)
 
-    fn to_string[vgap: Int = 0, hgap: Int = 1](self, carry: String = "") -> String:
-        var result = "[" + repr(self.chars) + " --> " + str(self.freqs) + "]"
-        result += repeat("\n" + carry + BoxChar.vertical, vgap)
-        result += "\n" + carry + BoxChar.vertical_right + repeat(BoxChar.horizontal, hgap) + self.get_left().to_string[vgap, hgap](padr(carry + BoxChar.vertical, hgap))
-        result += repeat("\n" + carry + BoxChar.vertical, vgap)
-        result += "\n" + carry + BoxChar.upper_right + repeat(BoxChar.horizontal, hgap) + self.get_right().to_string[vgap, hgap](padr(carry, hgap + 1))
-        return result
+    @no_inline
+    fn format_to(self, inout writer: Formatter):
+        self.format_to[0, 1](writer, "")
 
+    @no_inline
+    fn format_to[vgap: Int, hgap: Int](self, inout writer: Formatter, carry: String):
+        if self.left and self.right:
+            writer.write("[", repr(self.chars), " --> ", self.freqs, "]")
+            writer.write(repeat("\n" + carry + BoxChar.vertical, vgap))
+            writer.write("\n", carry, BoxChar.vertical_right, repeat(BoxChar.horizontal, hgap))
+            self.left[].format_to[vgap, hgap](writer, padr(carry + BoxChar.vertical, hgap))
+            writer.write(repeat("\n" + carry + BoxChar.vertical, vgap))
+            writer.write("\n", carry, BoxChar.upper_right, repeat(BoxChar.horizontal, hgap))
+            self.right[].format_to[vgap, hgap](writer, padr(carry, hgap + 1))
+        else:
+            var repr_char = repr(self.chars) + " "
+            writer.write("[", padr["-"](repr_char, 6 - len(repr_char)), "> ", self.freqs, "]")
 
-    #------( Comparison )------#
+    # +------( Comparison )------+ #
     #
     fn __lt__(self, other: Self) -> Bool:
-        return self.freqs < other.freqs or (self.freqs == other.freqs and compare(self.chars, other.chars) == 1)
+        return self.freqs < other.freqs or (
+            self.freqs == other.freqs and compare(self.chars, other.chars) == 1
+        )
 
     fn __le__(self, other: Self) -> Bool:
-        return self.freqs < other.freqs or (self.freqs == other.freqs and compare(self.chars, other.chars) != -1)
+        return self.freqs < other.freqs or (
+            self.freqs == other.freqs and compare(self.chars, other.chars) != -1
+        )
 
     fn __eq__(self, other: Self) -> Bool:
         return self.freqs == other.freqs and self.chars == other.chars
 
     fn __gt__(self, other: Self) -> Bool:
-        return self.freqs > other.freqs or (self.freqs == other.freqs and compare(self.chars, other.chars) == -1)
+        return self.freqs > other.freqs or (
+            self.freqs == other.freqs and compare(self.chars, other.chars) == -1
+        )
 
     fn __ge__(self, other: Self) -> Bool:
-        return self.freqs > other.freqs or (self.freqs == other.freqs and compare(self.chars, other.chars) != 1)
+        return self.freqs > other.freqs or (
+            self.freqs == other.freqs and compare(self.chars, other.chars) != 1
+        )
 
     fn __ne__(self, other: Self) -> Bool:
         return self.freqs != other.freqs or self.chars != other.chars
 
 
-
-
+# +----------------------------------------------------------------------------------------------+ #
+# | Huffman Leaf
+# +----------------------------------------------------------------------------------------------+ #
+#
 @register_passable("trivial")
-struct Leaf(Stringable, CollectionElement):
-    """
-    Huffman leaf.
-    """
-    #------< Data >------#
+struct Leaf(Formattable, StringableCollectionElement):
+    """Huffman leaf."""
+
+    # +------< Data >------+ #
     #
     var char: Char
     var freq: Int
 
-
-    #------( Initialize )------#
+    # +------( Initialize )------+ #
     #
-    fn __init__(char: Char, freq: Int) -> Self:
-        return Self{char: char, freq: freq}
+    fn __init__(inout self, char: Char, freq: Int):
+        self.char = char
+        self.freq = freq
 
-    fn __init__(entry: DictEntry[Char,Int]) -> Self:
-        return Self{char: entry.key, freq: entry.value}
+    fn __init__(inout self, entry: DictEntry[Char, Int]):
+        self.char = entry.key
+        self.freq = entry.value
 
-
-    #------( Formatting )------#
+    # +------( Format )------+ #
     #
+    @no_inline
     fn __str__(self) -> String:
-        return self.to_string()
+        return String.format_sequence(self)
 
-    fn to_string(self) -> String:
+    @no_inline
+    fn format_to(self, inout writer: Formatter):
         var repr_char = repr(self.char) + " "
-        return "[" + padr["-"](repr_char, 6 - len(repr_char)) + "> " + str(self.freq) + "]"
+        writer.write("[", padr["-"](repr_char, 6 - len(repr_char)), "> ", self.freq, "]")
 
-
-    #------( Comparison )------#
+    # +------( Comparison )------+ #
     #
     fn __lt__(self, other: Self) -> Bool:
         return self.freq < other.freq or (self.freq == other.freq and self.char < other.char)
@@ -181,105 +205,3 @@ struct Leaf(Stringable, CollectionElement):
 
     fn __ne__(self, other: Self) -> Bool:
         return self.freq != other.freq or self.char != other.char
-
-
-
-
-struct Node(Stringable, CollectionElement):
-    """
-    Huffman node. Represents either a `Tree` or `Leaf`.
-    """
-    #------< Data >------#
-    #
-    var value: Variant[Tree, Leaf]
-
-
-    #------( Lifetime )------#
-    #
-    fn __init__(inout self, value: Variant[Tree, Leaf]):
-        self.value = value
-
-    fn __init__(inout self, value: Tree):
-        self.value = value
-
-    fn __init__(inout self, value: Leaf):
-        self.value = value
-
-    fn __copyinit__(inout self, other: Self):
-        self.value = other.value
-
-    fn __moveinit__(inout self, owned other: Self):
-        self.value = other.value
-
-
-    #------( Type )------#
-    #
-    fn is_tree(self) -> Bool:
-        return self.value.isa[Tree]()
-
-    fn is_leaf(self) -> Bool:
-        return self.value.isa[Leaf]()
-
-    fn as_tree(self) -> Tree:
-        return self.value.get[Tree]()[]
-
-    fn as_leaf(self) -> Leaf:
-        return self.value.get[Leaf]()[]
-
-
-    #------( Get )------#
-    #
-    fn get_freqs(self) -> Int:
-        if self.is_tree():
-            return self.as_tree().freqs
-        return self.as_leaf().freq
-
-    fn get_chars(self) -> String:
-        if self.is_tree():
-            return self.as_tree().chars
-        return self.as_leaf().char
-
-    fn get_left(self) -> Optional[Node]:
-        if self.is_tree():
-            return self.as_tree().get_left()
-        return None
-
-    fn get_right(self) -> Optional[Node]:
-        if self.is_tree():
-            return self.as_tree().get_right()
-        return None
-
-
-    #------( Formatting )------#
-    #
-    fn __str__(self) -> String:
-        if self.is_tree():
-            return self.as_tree()
-        return self.as_leaf()
-
-    fn to_string[vgap: Int = 0, hgap: Int = 1](self, carry: String = "") -> String:
-        if self.is_tree():
-            return self.as_tree().to_string[vgap, hgap](carry)
-        return self.as_leaf().to_string()
-
-
-    #------( Comparison )------#
-    #
-    fn __lt__(self, other: Self) -> Bool:
-        return self.get_freqs() < other.get_freqs() or (self.get_freqs() == other.get_freqs() and compare(self.get_chars(), other.get_chars()) == 1)
-
-    fn __le__(self, other: Self) -> Bool:
-        return self.get_freqs() < other.get_freqs() or (self.get_freqs() == other.get_freqs() and compare(self.get_chars(), other.get_chars()) != -1)
-
-    fn __eq__(self, other: Self) -> Bool:
-        return self.get_freqs() == other.get_freqs() and self.get_chars() == other.get_chars()
-
-    fn __gt__(self, other: Self) -> Bool:
-        return self.get_freqs() > other.get_freqs() or (self.get_freqs() == other.get_freqs() and compare(self.get_chars(), other.get_chars()) == -1)
-
-    fn __ge__(self, other: Self) -> Bool:
-        return self.get_freqs() > other.get_freqs() or (self.get_freqs() == other.get_freqs() and compare(self.get_chars(), other.get_chars()) != 1)
-
-    fn __ne__(self, other: Self) -> Bool:
-        return self.get_freqs() != other.get_freqs() or self.get_chars() != other.get_chars()
-    
