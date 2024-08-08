@@ -12,7 +12,7 @@ from .utils import *
 # | Huffman Frequency Table
 # +----------------------------------------------------------------------------------------------+ #
 #
-struct FrequencyTable(Sized, Formattable, StringableCollectionElement):
+struct Freq(Sized, Formattable, StringableCollectionElement):
     """
     A table containing the frequency of characters in a `String` or `Path`.
 
@@ -29,7 +29,7 @@ struct FrequencyTable(Sized, Formattable, StringableCollectionElement):
         self._data = Dict[Char, Int]()
         self.account(string)
 
-    fn __init__[__: None = None](inout self, path: Path) raises:
+    fn __init__(inout self, path: Path) raises:
         self._data = Dict[Char, Int]()
         self.account(path)
 
@@ -68,6 +68,10 @@ struct FrequencyTable(Sized, Formattable, StringableCollectionElement):
     fn format_to(self, inout writer: Formatter):
         for item in self._data.items():
             writer.write(Leaf(item[]), "\n")
+
+    # +------( Subscript )------+ #
+    fn __getitem__(self, item: Char) raises -> Int:
+        return self._data[item]
 
     # +------( Unary )------+ #
     #

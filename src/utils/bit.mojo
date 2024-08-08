@@ -44,8 +44,8 @@ fn to_uint[type: DType]() -> DType:
 @always_inline
 fn repr_bits[
     bits: String = "01",
-    reverse_bits: Bool = False,
-    reverse_simd: Bool = False,
+    rbit: Bool = False,
+    rvec: Bool = False,
     beg: StringLiteral = "",
     sep: StringLiteral = "\n",
     end: StringLiteral = "",
@@ -60,15 +60,15 @@ fn repr_bits[
 
         @parameter
         for i in range(bit_width):
-            alias div = base ** (i if reverse_bits else bit_width - i - 1)
+            alias div = base ** (i if rbit else bit_width - i - 1)
             result += bits[int(uvalue // div) % base]
     else:
-        alias _range = reversible_range[reverse_simd, 1](value.size)
+        alias _range = reversible_range[rvec, 1](value.size)
 
         @parameter
         for i in _range:
-            result += repr_bits[bits, reverse_bits](value[i]) + sep
-        result += repr_bits[bits, reverse_bits](value[_range.end])
+            result += repr_bits[bits, rbit](value[i]) + sep
+        result += repr_bits[bits, rbit](value[_range.end])
 
     return result + end
 
@@ -78,9 +78,9 @@ fn repr_bits[
 # +----------------------------------------------------------------------------------------------+ #
 #
 fn eval_bits[
-    type: DType, size: Int, separator: StringLiteral = "\n", symbols: String = "01"
+    type: DType, size: Int, separator: StringLiteral = "\n", bits: String = "01"
 ](string: String) raises -> SIMD[type, size]:
-    constrained[len(symbols) == 2, "incorrect amount of symbols"]()
+    constrained[len(bits) == 2, "incorrect amount of symbols"]()
     var result: SIMD[type, size] = 0
 
     @parameter
@@ -91,8 +91,8 @@ fn eval_bits[
         @parameter
         for i in range(type.bitwidth()):
             var char = string[i]
-            var bit = char == symbols[1]
-            if bit or char == symbols[0]:
+            var bit = char == bits[1]
+            if bit or char == bits[0]:
                 result = (result << 1) + SIMD[type, size](bit)
             else:
                 raise Error("unexpected symbol")
@@ -101,7 +101,7 @@ fn eval_bits[
         if len(strings) != size:
             raise Error("incorrect number of elements")
         for i in range(size):
-            result[i] = eval_bits[type, 1, separator, symbols](strings[i])
+            result[i] = eval_bits[type, 1, separator, bits](strings[i])
 
     return result
 
@@ -158,9 +158,9 @@ fn repr_bits[
     var result: String = beg
     var _range = reversible_range[rptr, 1](len)
     for i in _range:
-        result += repr_bits[symbols, rbit](Scalar[type].load(ptr, i)) + sep
+        result += repr_bits[symbols, rbit](ptr.load(i)) + sep
     if len > 0:
-        result += repr_bits[symbols, rbit](Scalar[type].load(ptr, _range.end))
+        result += repr_bits[symbols, rbit](ptr.load(_range.end))
     return result + end
 
 
@@ -190,24 +190,24 @@ fn repr_bits[
 #
 fn get_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int) -> Bool:
     var dm = divmod(place, type.bitwidth())
-    return get_bit(Scalar[type].load(ptr, dm[0]), dm[1])
+    return get_bit(ptr.load(dm[0]), dm[1])
 
 
 fn set_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int, bit: Bool):
     var dm = divmod(place, type.bitwidth())
-    Scalar[type].store(ptr, dm[0], set_bit(Scalar[type].load(ptr, dm[0]), dm[1], bit))
+    ptr.store(dm[0], set_bit(ptr.load(dm[0]), dm[1], bit))
 
 
 fn set_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int):
     var dm = divmod(place, type.bitwidth())
-    Scalar[type].store(ptr, dm[0], set_bit(Scalar[type].load(ptr, dm[0]), dm[1]))
+    ptr.store(dm[0], set_bit(ptr.load(dm[0]), dm[1]))
 
 
 fn clear_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int):
     var dm = divmod(place, type.bitwidth())
-    Scalar[type].store(ptr, dm[0], clear_bit(Scalar[type].load(ptr, dm[0]), dm[1]))
+    ptr.store(dm[0], clear_bit(ptr.load(dm[0]), dm[1]))
 
 
 fn flip_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int):
     var dm = divmod(place, type.bitwidth())
-    Scalar[type].store(ptr, dm[0], flip_bit(Scalar[type].load(ptr, dm[0]), dm[1]))
+    ptr.store(dm[0], flip_bit(ptr.load(dm[0]), dm[1]))

@@ -5,7 +5,7 @@
 
 from collections.dict import Dict, DictEntry
 from collections.optional import Variant, Optional
-from huffman.utils import *
+from .utils import *
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -25,7 +25,7 @@ struct Tree(Formattable, StringableCollectionElement):
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self, frequencies: FrequencyTable) raises:
+    fn __init__(inout self, frequencies: Freq) raises:
         if len(frequencies) < 2:
             raise Error("Not enough symbols")
         var leafs = frequencies.to_leafs()
@@ -34,9 +34,7 @@ struct Tree(Formattable, StringableCollectionElement):
 
         @parameter
         fn pop_min() -> Self:
-            if next_tree < len(trees) and (
-                len(leafs) == 0 or trees[next_tree] < leafs[-1]
-            ):
+            if next_tree < len(trees) and (len(leafs) == 0 or trees[next_tree] < leafs[-1]):
                 var result = trees[next_tree]
                 next_tree += 1
                 return result
@@ -44,7 +42,7 @@ struct Tree(Formattable, StringableCollectionElement):
                 return leafs.pop()
 
         while len(leafs) + (len(trees) - next_tree) >= 2:
-            # This puts smaller frequencies on the right. 
+            # This puts smaller frequencies on the right.
             # The other way just inverts the encoding.
             var t1 = pop_min()
             var t2 = pop_min()

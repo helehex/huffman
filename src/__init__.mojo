@@ -3,6 +3,6 @@
 # x----------------------------------------------------------------------------------------------x #
 """Huffman Encoder in Mojo."""
 
-from .book import *
-from .frequency import *
-from .tree import *
+from .book import Book
+from .frequency import Freq
+from .tree import Tree, Leaf

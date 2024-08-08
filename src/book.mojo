@@ -4,7 +4,7 @@
 """Implements a huffman book for encoding and decoding messages."""
 
 from collections import Dict
-from huffman.utils import *
+from .utils import *
 
 
 # +----------------------------------------------------------------------------------------------+ #
