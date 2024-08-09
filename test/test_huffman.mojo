@@ -3,6 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 
 from testing import assert_equal
+from memory import memset_zero
 from huffman import Freq, Tree, Book
 
 

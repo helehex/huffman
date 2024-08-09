@@ -3,7 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Implements a huffman book for encoding and decoding messages."""
 
-from collections import Dict
+from collections import Dict, Optional
 from .utils import *
 
 
