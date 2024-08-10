@@ -4,13 +4,14 @@
 
 from testing import assert_equal
 from memory import memset_zero
+from pathlib import _dir_of_current_file
 from huffman import Freq, Tree, Book
 
 
 def main():
     
     # +--- generate frequency table
-    var tbl = Freq(path=String("res/important.txt"))
+    var tbl = Freq(_dir_of_current_file() / "../res/important.txt")
     assert_equal(tbl["N"], 38)
     assert_equal(tbl["n"], 163)
 
