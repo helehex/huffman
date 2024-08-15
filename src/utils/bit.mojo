@@ -3,6 +3,9 @@
 # x----------------------------------------------------------------------------------------------x #
 """Implements bit utilities."""
 
+from memory import bitcast
+from sys import sizeof
+
 
 @always_inline
 fn _bitwidth[type: DType, base: Int = 2]() -> Int:
