@@ -17,7 +17,7 @@ fn sort_[T: ComparableCollectionElement, *, descending: Bool = False](inout list
         var j = i
         var sink = list[j]
         while j > 0 and compare(sink, list[j - 1]):
-            list[j] = list[j - 1]
+            UnsafePointer.address_of(list[j])[] = UnsafePointer.address_of(list[j - 1])[]
             j -= 1
         list[j] = sink
 

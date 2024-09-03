@@ -1,5 +1,5 @@
 Huffman coding for mojo.
 
-Tested on Mojo 24.2
+Mojo nightly version: `mojo 2024.9.315 (62cda08f)`
 
 Pretty basic right now.
