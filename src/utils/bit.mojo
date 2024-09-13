@@ -41,7 +41,7 @@ fn to_uint[type: DType]() -> DType:
 
 
 # +----------------------------------------------------------------------------------------------+ #
-# | SIMD repr
+# | SIMD to Bits
 # +----------------------------------------------------------------------------------------------+ #
 #
 @always_inline
@@ -77,7 +77,7 @@ fn repr_bits[
 
 
 # +----------------------------------------------------------------------------------------------+ #
-# | SIMD eval
+# | Bits to SIMD
 # +----------------------------------------------------------------------------------------------+ #
 #
 fn eval_bits[
@@ -110,7 +110,7 @@ fn eval_bits[
 
 
 # +----------------------------------------------------------------------------------------------+ #
-# | SIMD Bit Manipulation
+# | Bit Manipulate SIMD
 # +----------------------------------------------------------------------------------------------+ #
 #
 fn get_bit[
@@ -146,7 +146,24 @@ fn flip_bit[
 
 
 # +----------------------------------------------------------------------------------------------+ #
-# | Memory repr
+# | String to Bits
+# +----------------------------------------------------------------------------------------------+ #
+#
+fn repr_bits[
+    symbols: String = "01",
+    rbit: Bool = False,
+    rptr: Bool = False,
+    beg: StringLiteral = "",
+    sep: StringLiteral = "\n",
+    end: StringLiteral = "",
+](string: String) -> String:
+    return repr_bits[symbols=symbols, rbit=rbit, rptr=rptr, beg=beg, sep=sep, end=end](
+        string.unsafe_ptr(), len(string)
+    )
+
+
+# +----------------------------------------------------------------------------------------------+ #
+# | Memory to Bits
 # +----------------------------------------------------------------------------------------------+ #
 #
 fn repr_bits[
@@ -176,7 +193,7 @@ fn repr_bits[
     sep: StringLiteral = "\n",
     end: StringLiteral = "",
 ](ptr: UnsafePointer[_, _, _], len: Int) -> String:
-    alias size = sizeof[ptr.T]()
+    alias size = sizeof[ptr.type]()
     var bytes = ptr.bitcast[UInt8]()
     var result: String = beg
     var _range = reversible_range[rptr, 1](len)
@@ -188,7 +205,7 @@ fn repr_bits[
 
 
 # +----------------------------------------------------------------------------------------------+ #
-# | Memory Bit Manipulation
+# | Bit Manipulate Memory
 # +----------------------------------------------------------------------------------------------+ #
 #
 fn get_bit[type: DType](ptr: UnsafePointer[Scalar[type]], place: Int) -> Bool:
