@@ -1,7 +1,6 @@
 - huffman
     - canonical encoding
     - improve performance
-    - more testing and examples
 - bit
     - improve bit repr and eval
     - bit array
