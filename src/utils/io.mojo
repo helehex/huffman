@@ -29,27 +29,64 @@ fn print_[
 @always_inline
 fn repeat(string: String, amount: Int) -> String:
     var result = String()
-    for i in range(amount):
+    for _ in range(amount):
         result += string
+    return result
+
+
+@no_inline
+fn write_repeated[*Ts: Formattable](inout writer: Formatter, *items: *Ts, amount: Int):
+    @parameter
+    @always_inline
+    fn _write[T: Formattable](item: T):
+        item.format_to(writer)
+
+    for _ in range(amount):
+        items.each[_write]()
+
+
+@no_inline
+fn write_ljust[
+    T: Formattable
+](inout writer: Formatter, item: T, width: Int, fillchar: StringLiteral = " "):
+    var item_str = String.format_sequence(item)
+    writer.write(item_str)
+    write_repeated(writer, fillchar, amount=width - len(item_str))
+
+
+@no_inline
+fn write_rjust[
+    T: Formattable
+](inout writer: Formatter, item: T, width: Int, fillchar: StringLiteral = " "):
+    var item_str = String.format_sequence(item)
+    write_repeated(writer, fillchar, amount=width - len(item_str))
+    writer.write(item_str)
+
+
+@always_inline
+fn lpad(string: String, amount: Int = 1, fillchar: Char = " ") -> String:
+    var result = String()
+    var writer = result._unsafe_to_formatter()
+    write_repeated(writer, fillchar, amount=amount)
+    writer.write(string)
+    return result
+
+
+@always_inline
+fn rpad(string: String, amount: Int = 1, fillchar: Char = " ") -> String:
+    var result = String()
+    var writer = result._unsafe_to_formatter()
+    writer.write(string)
+    write_repeated(writer, fillchar, amount=amount)
     return result
 
 
 @always_inline
 fn repeat[__: None = None](char: Char, amount: Int) -> String:
     var result = String()
-    for i in range(amount):
+    for _ in range(amount):
         result += str(char)
     return result
-
-
-@always_inline
-fn padl[char: Char = " "](string: String, amount: Int = 1) -> String:
-    return repeat(char, amount) + string
-
-
-@always_inline
-fn padr[char: Char = " "](string: String, amount: Int = 1) -> String:
-    return string + repeat(char, amount)
 
 
 @always_inline

@@ -2,6 +2,7 @@
 # | Copyright (c) 2024 Helehex
 # x----------------------------------------------------------------------------------------------x #
 """Implements a `Char` type."""
+from collections.string import _chr_ascii, _repr_ascii
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -64,11 +65,15 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
 
     @always_inline
     fn __str__(self) -> String:
-        return chr(int(self.value))
+        return _chr_ascii(self.value)
 
     @always_inline
     fn __repr__(self) -> String:
-        return chr(int(self.value)).__repr__()
+        return _repr_ascii(self.value)
+
+    @always_inline
+    fn format_to(self, inout writer: Formatter):
+        writer.write(self.__str__())
 
     @always_inline
     fn __hash__(self) -> UInt:

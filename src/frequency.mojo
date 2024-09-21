@@ -55,7 +55,7 @@ struct Freq(Sized, Formattable, StringableCollectionElement):
         var result = List[Leaf](capacity=len(self))
         for item in self._data.items():
             result.append(item[])
-        sort_[descending=True](result)
+        sort_[Leaf, Leaf.__gt__](result)
         return result
 
     # +------( Format )------+ #
@@ -70,10 +70,12 @@ struct Freq(Sized, Formattable, StringableCollectionElement):
             writer.write(Leaf(item[]), "\n")
 
     # +------( Subscript )------+ #
+    @always_inline
     fn __getitem__(self, item: Char) raises -> Int:
         return self._data[item]
 
     # +------( Unary )------+ #
     #
+    @always_inline
     fn __len__(self) -> Int:
         return len(self._data)

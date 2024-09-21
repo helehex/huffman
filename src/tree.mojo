@@ -111,41 +111,50 @@ struct Tree(Formattable, StringableCollectionElement):
     fn format_to[vgap: Int, hgap: Int](self, inout writer: Formatter, carry: String):
         if self.left and self.right:
             writer.write("[", repr(self.chars), " --> ", self.freqs, "]")
-            writer.write(repeat("\n" + carry + BoxChar.vertical, vgap))
-            writer.write("\n", carry, BoxChar.vertical_right, repeat(BoxChar.horizontal, hgap))
-            self.left[].format_to[vgap, hgap](writer, padr(carry + BoxChar.vertical, hgap))
-            writer.write(repeat("\n" + carry + BoxChar.vertical, vgap))
-            writer.write("\n", carry, BoxChar.upper_right, repeat(BoxChar.horizontal, hgap))
-            self.right[].format_to[vgap, hgap](writer, padr(carry, hgap + 1))
+            write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)
+            writer.write("\n", carry, BoxChar.vertical_right)
+            write_repeated(writer, BoxChar.horizontal, amount=hgap)
+            self.left[].format_to[vgap, hgap](writer, rpad(carry + BoxChar.vertical, hgap))
+            write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)
+            writer.write("\n", carry, BoxChar.upper_right)
+            write_repeated(writer, BoxChar.horizontal, amount=hgap)
+            self.right[].format_to[vgap, hgap](writer, rpad(carry, hgap + 1))
         else:
-            var repr_char = repr(self.chars) + " "
-            writer.write("[", padr["-"](repr_char, 6 - len(repr_char)), "> ", self.freqs, "]")
+            writer.write("[")
+            write_ljust(writer, repr(self.chars) + " ", 6, "-")
+            writer.write("> ", self.freqs, "]")
 
     # +------( Comparison )------+ #
     #
+    @always_inline
     fn __lt__(self, other: Self) -> Bool:
         return self.freqs < other.freqs or (
             self.freqs == other.freqs and compare(self.chars, other.chars) == 1
         )
 
+    @always_inline
     fn __le__(self, other: Self) -> Bool:
         return self.freqs < other.freqs or (
             self.freqs == other.freqs and compare(self.chars, other.chars) != -1
         )
 
+    @always_inline
     fn __eq__(self, other: Self) -> Bool:
         return self.freqs == other.freqs and self.chars == other.chars
 
+    @always_inline
     fn __gt__(self, other: Self) -> Bool:
         return self.freqs > other.freqs or (
             self.freqs == other.freqs and compare(self.chars, other.chars) == -1
         )
 
+    @always_inline
     fn __ge__(self, other: Self) -> Bool:
         return self.freqs > other.freqs or (
             self.freqs == other.freqs and compare(self.chars, other.chars) != 1
         )
 
+    @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return self.freqs != other.freqs or self.chars != other.chars
 
@@ -181,25 +190,32 @@ struct Leaf(Formattable, StringableCollectionElement):
 
     @no_inline
     fn format_to(self, inout writer: Formatter):
-        var repr_char = repr(self.char) + " "
-        writer.write("[", padr["-"](repr_char, 6 - len(repr_char)), "> ", self.freq, "]")
+        writer.write("[")
+        write_ljust(writer, repr(self.char) + " ", 6, "-")
+        writer.write("> ", self.freq, "]")
 
     # +------( Comparison )------+ #
     #
+    @always_inline
     fn __lt__(self, other: Self) -> Bool:
         return self.freq < other.freq or (self.freq == other.freq and self.char < other.char)
 
+    @always_inline
     fn __le__(self, other: Self) -> Bool:
         return self.freq < other.freq or (self.freq == other.freq and self.char <= other.char)
 
+    @always_inline
     fn __eq__(self, other: Self) -> Bool:
         return self.freq == other.freq and self.char == other.char
 
+    @always_inline
     fn __gt__(self, other: Self) -> Bool:
         return self.freq > other.freq or (self.freq == other.freq and self.char > other.char)
 
+    @always_inline
     fn __ge__(self, other: Self) -> Bool:
         return self.freq > other.freq or (self.freq == other.freq and self.char >= other.char)
 
+    @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return self.freq != other.freq or self.char != other.char
