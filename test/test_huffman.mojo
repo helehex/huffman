@@ -3,7 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 
 from testing import assert_equal
-from memory import memset_zero
+from memory import UnsafePointer, memset_zero
 from pathlib import _dir_of_current_file
 from huffman import Freq, Tree, Book
 

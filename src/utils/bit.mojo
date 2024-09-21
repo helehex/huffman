@@ -3,7 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Implements bit utilities."""
 
-from memory import bitcast
+from memory import UnsafePointer, bitcast
 from sys import sizeof
 
 
