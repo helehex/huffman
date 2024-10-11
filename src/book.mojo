@@ -4,6 +4,7 @@
 """Implements a huffman book for encoding and decoding messages."""
 
 from collections import Dict, Optional
+from utils import Span
 from .utils import *
 
 
@@ -51,10 +52,9 @@ struct Book:
         var bit_len: Int = 0
         var new_len: Int = 0
         var bytes = string.as_bytes()
-        bytes.append(0)
 
-        for byte in bytes:
-            var char = Char(byte[])
+        @parameter
+        fn _next(char: Char) raises:
             var code = self.enc.find(char)
             if code:
                 var code = code.take()
@@ -68,6 +68,14 @@ struct Book:
                         raise Error("buffer overflow")
             else:
                 raise Error("character '" + char + "' was not in vocabulary")
+        
+        # write encoded bytes
+        for byte in bytes:
+            _next(Char(byte[]))
+
+        # write terminator
+        _next(Char())
+
         ptr_len = new_len + 1
 
     fn decode(self, string: String) raises -> String:
