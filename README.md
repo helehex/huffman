@@ -1,5 +1,5 @@
 Huffman coding for mojo.
 
-Mojo version: `24.6.0.dev2024101405`
+Mojo version: `24.6.0.dev2024101523`
 
 Pretty basic right now.
