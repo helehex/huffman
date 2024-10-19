@@ -35,11 +35,11 @@ fn repeat(string: String, amount: Int) -> String:
 
 
 @no_inline
-fn write_repeated[*Ts: Formattable](inout writer: Formatter, *items: *Ts, amount: Int):
+fn write_repeated[WriterType: Writer, *WritableTypes: Writable](inout writer: WriterType, *items: *WritableTypes, amount: Int):
     @parameter
     @always_inline
-    fn _write[T: Formattable](item: T):
-        item.format_to(writer)
+    fn _write[T: Writable](item: T):
+        item.write_to(writer)
 
     for _ in range(amount):
         items.each[_write]()
@@ -47,18 +47,18 @@ fn write_repeated[*Ts: Formattable](inout writer: Formatter, *items: *Ts, amount
 
 @no_inline
 fn write_ljust[
-    T: Formattable
-](inout writer: Formatter, item: T, width: Int, fillchar: StringLiteral = " "):
-    var item_str = String.format_sequence(item)
+    WriterType: Writer, WritableType: Writable, //
+](inout writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
+    var item_str = String.write(item)
     writer.write(item_str)
     write_repeated(writer, fillchar, amount=width - len(item_str))
 
 
 @no_inline
 fn write_rjust[
-    T: Formattable
-](inout writer: Formatter, item: T, width: Int, fillchar: StringLiteral = " "):
-    var item_str = String.format_sequence(item)
+    WriterType: Writer, WritableType: Writable, //
+](inout writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
+    var item_str = String.write(item)
     write_repeated(writer, fillchar, amount=width - len(item_str))
     writer.write(item_str)
 
@@ -66,18 +66,16 @@ fn write_rjust[
 @always_inline
 fn lpad(string: String, amount: Int = 1, fillchar: Char = " ") -> String:
     var result = String()
-    var writer = result._unsafe_to_formatter()
-    write_repeated(writer, fillchar, amount=amount)
-    writer.write(string)
+    write_repeated(result, fillchar, amount=amount)
+    result.write(string)
     return result
 
 
 @always_inline
 fn rpad(string: String, amount: Int = 1, fillchar: Char = " ") -> String:
     var result = String()
-    var writer = result._unsafe_to_formatter()
-    writer.write(string)
-    write_repeated(writer, fillchar, amount=amount)
+    result.write(string)
+    write_repeated(result, fillchar, amount=amount)
     return result
 
 

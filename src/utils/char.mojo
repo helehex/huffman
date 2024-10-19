@@ -72,7 +72,7 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
         return _repr_ascii(self.value)
 
     @always_inline
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
         writer.write(self.__str__())
 
     @always_inline

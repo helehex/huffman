@@ -12,7 +12,7 @@ from .utils import *
 # | Huffman Tree
 # +----------------------------------------------------------------------------------------------+ #
 #
-struct Tree(Formattable, StringableCollectionElement):
+struct Tree(Writable, StringableCollectionElement):
     """Huffman tree."""
 
     # +------< Data >------+ #
@@ -101,24 +101,24 @@ struct Tree(Formattable, StringableCollectionElement):
     #
     @no_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @no_inline
-    fn format_to(self, inout writer: Formatter):
-        self.format_to[0, 1](writer, "")
+    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
+        self.write_to[0, 1](writer, "")
 
     @no_inline
-    fn format_to[vgap: Int, hgap: Int](self, inout writer: Formatter, carry: String):
+    fn write_to[WriterType: Writer, //, vgap: Int, hgap: Int](self, inout writer: WriterType, carry: String):
         if self.left and self.right:
             writer.write("[", repr(self.chars), " --> ", self.freqs, "]")
             write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)
             writer.write("\n", carry, BoxChar.vertical_right)
             write_repeated(writer, BoxChar.horizontal, amount=hgap)
-            self.left[].format_to[vgap, hgap](writer, rpad(carry + BoxChar.vertical, hgap))
+            self.left[].write_to[vgap, hgap](writer, rpad(carry + BoxChar.vertical, hgap))
             write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)
             writer.write("\n", carry, BoxChar.upper_right)
             write_repeated(writer, BoxChar.horizontal, amount=hgap)
-            self.right[].format_to[vgap, hgap](writer, rpad(carry, hgap + 1))
+            self.right[].write_to[vgap, hgap](writer, rpad(carry, hgap + 1))
         else:
             writer.write("[")
             write_ljust(writer, repr(self.chars) + " ", 6, "-")
@@ -164,7 +164,7 @@ struct Tree(Formattable, StringableCollectionElement):
 # +----------------------------------------------------------------------------------------------+ #
 #
 @register_passable("trivial")
-struct Leaf(Formattable, StringableCollectionElement):
+struct Leaf(Writable, StringableCollectionElement):
     """Huffman leaf."""
 
     # +------< Data >------+ #
@@ -186,10 +186,10 @@ struct Leaf(Formattable, StringableCollectionElement):
     #
     @no_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @no_inline
-    fn format_to(self, inout writer: Formatter):
+    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
         writer.write("[")
         write_ljust(writer, repr(self.char) + " ", 6, "-")
         writer.write("> ", self.freq, "]")
