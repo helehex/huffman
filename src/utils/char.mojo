@@ -47,6 +47,7 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
 
     var value: Scalar[DType.uint8]
 
+    @implicit
     @always_inline("nodebug")
     fn __init__(inout self, none: None = None):
         self.value = 0
@@ -55,10 +56,12 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
     fn __init__(inout self, char: Scalar[DType.uint8]):
         self.value = char
 
+    @implicit
     @always_inline
     fn __init__(inout self, char: StringLiteral):
         self.value = ord(char)
 
+    @implicit
     @always_inline
     fn __init__[__: None = None](inout self, char: String):
         self.value = ord(char)

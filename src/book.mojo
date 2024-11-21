@@ -68,7 +68,7 @@ struct Book:
                         raise Error("buffer overflow")
             else:
                 raise Error("character '" + char + "' was not in vocabulary")
-        
+
         # write encoded bytes
         for byte in bytes:
             _next(Char(byte[]))

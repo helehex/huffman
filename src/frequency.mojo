@@ -54,7 +54,7 @@ struct Freq(Sized, Writable, StringableCollectionElement):
         """Return a list of leafs sorted by frequency."""
         var result = List[Leaf](capacity=len(self))
         for item in self._data.items():
-            result.append(item[])
+            result.append(Leaf(item[]))
         sort_[Leaf, Leaf.__gt__](result)
         return result
 

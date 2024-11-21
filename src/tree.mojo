@@ -34,7 +34,7 @@ struct Tree(Writable, StringableCollectionElement):
 
         @parameter
         fn pop_min() -> Self:
-            if next_tree < len(trees) and (len(leafs) == 0 or trees[next_tree] < leafs[-1]):
+            if next_tree < len(trees) and (len(leafs) == 0 or trees[next_tree] < Tree(leafs[-1])):
                 var result = trees[next_tree]
                 next_tree += 1
                 return result
@@ -108,7 +108,9 @@ struct Tree(Writable, StringableCollectionElement):
         self.write_to[0, 1](writer, "")
 
     @no_inline
-    fn write_to[WriterType: Writer, //, vgap: Int, hgap: Int](self, inout writer: WriterType, carry: String):
+    fn write_to[
+        WriterType: Writer, //, vgap: Int, hgap: Int
+    ](self, inout writer: WriterType, carry: String):
         if self.left and self.right:
             writer.write("[", repr(self.chars), " --> ", self.freqs, "]")
             write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)

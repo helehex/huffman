@@ -35,7 +35,9 @@ fn repeat(string: String, amount: Int) -> String:
 
 
 @no_inline
-fn write_repeated[WriterType: Writer, *WritableTypes: Writable](inout writer: WriterType, *items: *WritableTypes, amount: Int):
+fn write_repeated[
+    WriterType: Writer, *WritableTypes: Writable
+](inout writer: WriterType, *items: *WritableTypes, amount: Int):
     @parameter
     @always_inline
     fn _write[T: Writable](item: T):
