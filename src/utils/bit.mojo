@@ -174,7 +174,7 @@ fn repr_bits[
     beg: StringLiteral = "",
     sep: StringLiteral = "\n",
     end: StringLiteral = "",
-](ptr: UnsafePointer[Scalar[type], _, _], len: Int) -> String:
+](ptr: UnsafePointer[Scalar[type], *_], len: Int) -> String:
     var result: String = beg
     var _range = reversible_range[rptr, 1](len)
     for i in _range:
@@ -192,7 +192,7 @@ fn repr_bits[
     beg: StringLiteral = "",
     sep: StringLiteral = "\n",
     end: StringLiteral = "",
-](ptr: UnsafePointer[_, _, _], len: Int) -> String:
+](ptr: UnsafePointer[*_], len: Int) -> String:
     alias size = sizeof[ptr.type]()
     var bytes = ptr.bitcast[UInt8]()
     var result: String = beg
