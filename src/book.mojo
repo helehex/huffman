@@ -4,7 +4,7 @@
 """Implements a huffman book for encoding and decoding messages."""
 
 from collections import Dict, Optional
-from utils import Span
+from memory import Span
 from .utils import *
 
 
@@ -22,12 +22,12 @@ struct Book:
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self, tree: Tree):
+    fn __init__(out self, tree: Tree):
         self.enc = Dict[Char, String]()
         self.dec = Dict[String, Char]()
         self._account(tree, "")
 
-    fn _account(inout self, current: Tree, code: String):
+    fn _account(mut self, current: Tree, code: String):
         if current.left and current.right:
             self._account(current.left[], code + "0")
             self._account(current.right[], code + "1")
@@ -48,7 +48,7 @@ struct Book:
                 raise Error("character '" + char + "' was not in vocabulary")
         return result
 
-    fn encode(self, string: String, ptr: UnsafePointer[UInt8], inout ptr_len: Int) raises:
+    fn encode(self, string: String, ptr: UnsafePointer[UInt8], mut ptr_len: Int) raises:
         var bit_len: Int = 0
         var new_len: Int = 0
         var bytes = string.as_bytes()

@@ -25,7 +25,7 @@ struct Tree(Writable, StringableCollectionElement):
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self, frequencies: Freq) raises:
+    fn __init__(out self, frequencies: Freq) raises:
         if len(frequencies) < 2:
             raise Error("Not enough symbols")
         var leafs = frequencies.to_leafs()
@@ -50,7 +50,7 @@ struct Tree(Writable, StringableCollectionElement):
 
         self = trees[next_tree]
 
-    fn __init__(inout self, left: Self, right: Self):
+    fn __init__(out self, left: Self, right: Self):
         self.chars = left.chars + right.chars
         self.freqs = left.freqs + right.freqs
         self.left = UnsafePointer[Self].alloc(1)
@@ -60,7 +60,7 @@ struct Tree(Writable, StringableCollectionElement):
         self._rc = UnsafePointer[Int].alloc(1)
         self._rc.init_pointee_copy(0)
 
-    fn __init__(inout self, leaf: Leaf):
+    fn __init__(out self, leaf: Leaf):
         self.chars = str(leaf.char)
         self.freqs = leaf.freq
         self.left = UnsafePointer[Self]()
@@ -68,7 +68,7 @@ struct Tree(Writable, StringableCollectionElement):
         self._rc = UnsafePointer[Int].alloc(1)
         self._rc.init_pointee_copy(0)
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(mut self, other: Self):
         self.chars = other.chars
         self.freqs = other.freqs
         self.left = other.left
@@ -76,7 +76,7 @@ struct Tree(Writable, StringableCollectionElement):
         self._rc = other._rc
         self._rc[] += 1
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(mut self, owned other: Self):
         self.chars = other.chars
         self.freqs = other.freqs
         self.left = other.left
@@ -104,13 +104,13 @@ struct Tree(Writable, StringableCollectionElement):
         return String.write(self)
 
     @no_inline
-    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //](self, mut writer: WriterType):
         self.write_to[0, 1](writer, "")
 
     @no_inline
     fn write_to[
         WriterType: Writer, //, vgap: Int, hgap: Int
-    ](self, inout writer: WriterType, carry: String):
+    ](self, mut writer: WriterType, carry: String):
         if self.left and self.right:
             writer.write("[", repr(self.chars), " --> ", self.freqs, "]")
             write_repeated(writer, "\n", carry, BoxChar.vertical, amount=vgap)
@@ -176,11 +176,11 @@ struct Leaf(Writable, StringableCollectionElement):
 
     # +------( Initialize )------+ #
     #
-    fn __init__(inout self, char: Char, freq: Int):
+    fn __init__(out self, char: Char, freq: Int):
         self.char = char
         self.freq = freq
 
-    fn __init__(inout self, entry: DictEntry[Char, Int]):
+    fn __init__(out self, entry: DictEntry[Char, Int]):
         self.char = entry.key
         self.freq = entry.value
 
@@ -191,7 +191,7 @@ struct Leaf(Writable, StringableCollectionElement):
         return String.write(self)
 
     @no_inline
-    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //](self, mut writer: WriterType):
         writer.write("[")
         write_ljust(writer, repr(self.char) + " ", 6, "-")
         writer.write("> ", self.freq, "]")

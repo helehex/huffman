@@ -49,21 +49,21 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
 
     @implicit
     @always_inline("nodebug")
-    fn __init__(inout self, none: None = None):
+    fn __init__(out self, none: None = None):
         self.value = 0
 
     @always_inline
-    fn __init__(inout self, char: Scalar[DType.uint8]):
+    fn __init__(out self, char: Scalar[DType.uint8]):
         self.value = char
 
     @implicit
     @always_inline
-    fn __init__(inout self, char: StringLiteral):
+    fn __init__(out self, char: StringLiteral):
         self.value = ord(char)
 
     @implicit
     @always_inline
-    fn __init__[__: None = None](inout self, char: String):
+    fn __init__[__: None = None](out self, char: String):
         self.value = ord(char)
 
     @always_inline
@@ -75,7 +75,7 @@ struct Char(Representable, CollectionElement, KeyElement, Intable):
         return _repr_ascii(self.value)
 
     @always_inline
-    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //](self, mut writer: WriterType):
         writer.write(self.__str__())
 
     @always_inline

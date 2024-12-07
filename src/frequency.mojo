@@ -25,24 +25,24 @@ struct Freq(Sized, Writable, StringableCollectionElement):
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self, string: String):
+    fn __init__(out self, string: String):
         self._data = Dict[Char, Int]()
         self.account(string)
 
-    fn __init__(inout self, path: Path) raises:
+    fn __init__(out self, path: Path) raises:
         self._data = Dict[Char, Int]()
         self.account(path)
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(mut self, other: Self):
         self._data = other._data
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(mut self, owned other: Self):
         self._data = other._data^
 
-    fn account(inout self, path: Path) raises:
+    fn account(mut self, path: Path) raises:
         self.account(path.read_text())
 
-    fn account(inout self, string: String):
+    fn account(mut self, string: String):
         for i in range(len(string)):
             var char = string[i]
             self._data[char] = self._data.find(char).or_else(0) + 1
@@ -65,7 +65,7 @@ struct Freq(Sized, Writable, StringableCollectionElement):
         return String.write(self)
 
     @no_inline
-    fn write_to[WriterType: Writer, //](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //](self, mut writer: WriterType):
         for item in self._data.items():
             writer.write(Leaf(item[]), "\n")
 

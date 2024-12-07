@@ -4,7 +4,7 @@
 """Implements Sort."""
 
 
-fn sort_[T: ComparableCollectionElement, compare: fn (T, T) -> Bool](inout list: List[T]):
+fn sort_[T: ComparableCollectionElement, compare: fn (T, T) -> Bool](mut list: List[T]):
     for i in range(1, len(list)):
         var j = i
         var sink = list[j]

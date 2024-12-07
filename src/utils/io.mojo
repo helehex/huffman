@@ -37,7 +37,7 @@ fn repeat(string: String, amount: Int) -> String:
 @no_inline
 fn write_repeated[
     WriterType: Writer, *WritableTypes: Writable
-](inout writer: WriterType, *items: *WritableTypes, amount: Int):
+](mut writer: WriterType, *items: *WritableTypes, amount: Int):
     @parameter
     @always_inline
     fn _write[T: Writable](item: T):
@@ -50,7 +50,7 @@ fn write_repeated[
 @no_inline
 fn write_ljust[
     WriterType: Writer, WritableType: Writable, //
-](inout writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
+](mut writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
     var item_str = String.write(item)
     writer.write(item_str)
     write_repeated(writer, fillchar, amount=width - len(item_str))
@@ -59,7 +59,7 @@ fn write_ljust[
 @no_inline
 fn write_rjust[
     WriterType: Writer, WritableType: Writable, //
-](inout writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
+](mut writer: WriterType, item: WritableType, width: Int, fillchar: StringLiteral = " "):
     var item_str = String.write(item)
     write_repeated(writer, fillchar, amount=width - len(item_str))
     writer.write(item_str)
