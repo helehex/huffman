@@ -32,6 +32,7 @@ struct Tree(Writable, StringableCollectionElement):
         var trees = List[Self](capacity=len(leafs))
         var next_tree = 0
 
+        # do something better than converting leaf to tree?
         @parameter
         fn pop_min() -> Self:
             if next_tree < len(trees) and (len(leafs) == 0 or trees[next_tree] < Tree(leafs[-1])):
@@ -39,7 +40,7 @@ struct Tree(Writable, StringableCollectionElement):
                 next_tree += 1
                 return result
             else:
-                return leafs.pop()
+                return Tree(leafs.pop())
 
         while len(leafs) + (len(trees) - next_tree) >= 2:
             # This puts smaller frequencies on the right.
