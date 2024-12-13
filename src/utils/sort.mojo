@@ -9,6 +9,6 @@ fn sort_[T: ComparableCollectionElement, compare: fn (T, T) -> Bool](mut list: L
         var j = i
         var sink = list[j]
         while j > 0 and compare(sink, list[j - 1]):
-            list[j] = UnsafePointer.address_of(list[j - 1])[]
+            list[j] = UnsafePointer.address_of(list[j - 1]).take_pointee()
             j -= 1
         list[j] = sink
